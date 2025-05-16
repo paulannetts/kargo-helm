@@ -40,9 +40,20 @@ spec:
     config:
       path: ./out
       message: ${{ task.outputs['update-image'].commitMessage }}
+  # Push the changes to the Git repository.
   - uses: git-push
+    as: push-main
+    if: ${{ vars.openpr != 'true' }}
     config:
       path: ./out
+
+  # Push the changes to a newly created branch in the Git repository.
+  - uses: git-push
+    if: ${{ vars.openpr == 'true' }}
+    as: push-branch
+    config:
+      path: ./out
+      generateTargetBranch: true
   # Open a pull request to merge the changes into the main branch.
   - uses: git-open-pr
     as: open-pr
@@ -50,7 +61,7 @@ spec:
     config:
       repoURL: ${{ vars.repoURL }}
       createTargetBranch: true
-      sourceBranch: ${{ task.outputs.push.branch }}
+      sourceBranch: ${{ task.outputs['push-branch'].branch }}
       targetBranch: ${{ vars.branch }}
   # Wait for the pull request to be merged.
   - uses: git-wait-for-pr
