@@ -13,7 +13,8 @@ spec:
     value: main
   - name: envPath
   - name: argocdApp
-
+  - name: openpr
+    value: "false"
   steps:
   - uses: git-clone
     config:
@@ -42,6 +43,22 @@ spec:
   - uses: git-push
     config:
       path: ./out
+  # Open a pull request to merge the changes into the main branch.
+  - uses: git-open-pr
+    as: open-pr
+    if: ${{ vars.openpr == 'true' }}
+    config:
+      repoURL: ${{ vars.repoURL }}
+      createTargetBranch: true
+      sourceBranch: ${{ task.outputs.push.branch }}
+      targetBranch: ${{ vars.branch }}
+  # Wait for the pull request to be merged.
+  - uses: git-wait-for-pr
+    as: wait-for-pr
+    if: ${{ vars.openpr == 'true' }}
+    config:
+      repoURL: ${{ vars.repoURL }}
+      prNumber: ${{ task.outputs['open-pr'].prNumber }}
   - uses: argocd-update
     config:
       apps:

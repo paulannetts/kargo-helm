@@ -92,4 +92,6 @@ spec:
         - name: envPath
           value: env/prod
         - name: argocdApp
-          value: kargo-helm-prod
+          value: kargo-helm-pro
+        - name: openpr
+          value: "true"
